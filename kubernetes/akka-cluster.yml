@@ -4,7 +4,7 @@ metadata:
   labels:
     app: todolist-app
   name: todolist-app
-  namespace: todolist-app
+  namespace: todolist-app-1
 spec:
   replicas: 3
   selector:
@@ -56,7 +56,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: pod-reader
-  namespace: todolist-app
+  namespace: todolist-app-1
 rules:
 - apiGroups: [""] # "" indicates the core API group
   resources: ["pods"]
@@ -66,12 +66,12 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: read-pods
-  namespace: todolist-app
+  namespace: todolist-app-1
 subjects:
 # Note the `name` line below. The first default refers to the namespace. The second refers to the service account name.
 # For instance, `name: system:serviceaccount:myns:default` would refer to the default service account in namespace `myns`
 - kind: User
-  name: system:serviceaccount:todolist-app:default
+  name: system:serviceaccount:todolist-app-1:default
 roleRef:
   kind: Role
   name: pod-reader

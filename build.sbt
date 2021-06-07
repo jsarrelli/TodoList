@@ -1,6 +1,6 @@
 organization in ThisBuild := "com.lightbend"
 
-name := "akka-sample-cluster-kubernetes"
+name := "todolist-app"
 
 scalaVersion := "2.13.0"
 lazy val akkaHttpVersion = "10.2.3"
@@ -21,9 +21,9 @@ enablePlugins(JavaServerAppPackaging, DockerPlugin)
 
 dockerExposedPorts := Seq(8080, 8558, 25520)
 dockerUpdateLatest := true
+dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 dockerUsername := sys.props.get("docker.username")
 dockerRepository := sys.props.get("docker.registry")
-dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 
 libraryDependencies ++= {
   Seq(

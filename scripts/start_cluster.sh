@@ -8,7 +8,7 @@ export KUBECONFIG=~/.kube/config
 kubectl config set-context docker-desktop
 
 kubectl apply -f kubernetes/namespace.json
-kubectl config set-context --current --namespace=todolist-app
+kubectl config set-context --current --namespace=todolist-app-1
 kubectl apply -f kubernetes/akka-cluster.yml
 kubectl expose deployment todolist-app --type=LoadBalancer --name=todolist-app-service
 
@@ -16,7 +16,7 @@ for i in {1..10}
 do
   echo "Waiting for pods to get ready..."
   kubectl get pods
-  [ `kubectl get pods | grep Running | wc -l` -eq 3 ] && break
+  [ `kubectl get pods | grep Running | wc -l` -eq 2 ] && break
   sleep 4
 done
 
@@ -32,7 +32,7 @@ for i in {1..10}
 do
   echo "Checking for MemberUp logging..."
   kubectl logs $POD | grep MemberUp || true
-  [ `kubectl logs $POD | grep MemberUp | wc -l` -eq 3 ] && break
+  [ `kubectl logs $POD | grep MemberUp | wc -l` -eq 2 ] && break
   sleep 3
 done
 
@@ -40,7 +40,7 @@ kubectl get pods
 
 echo "Logs"
 echo "=============================="
-for POD in $(kubectl get pods | grep to-do-list-app | awk '{ print $1 }')
+for POD in $(kubectl get pods | grep todolist-app | awk '{ print $1 }')
 do
   echo "Logging for $POD"
   kubectl logs $POD
@@ -48,8 +48,10 @@ done
 
 if [ $i -eq 10 ]
 then
-  echo "No 3 MemberUp log events found"
+  echo "No 2 MemberUp log events found"
   echo "=============================="
 
   exit -1
 fi
+
+minikube service todolist-app-service -n todolist-app-1 --url
