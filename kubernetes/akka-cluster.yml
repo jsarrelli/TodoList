@@ -6,7 +6,7 @@ metadata:
   name: todolist-app
   namespace: todolist-app-1
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: todolist-app

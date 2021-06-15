@@ -1,3 +1,6 @@
+import play.sbt.routes.RoutesKeys
+
+
 organization in ThisBuild := "com.lightbend"
 
 name := "todolist-app"
@@ -15,31 +18,57 @@ classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.AllLibraryJars
 fork in run := true
 Compile / run / fork := true
 
-mainClass in (Compile, run) := Some("todolist-app.ToDoListApp")
 
-enablePlugins(JavaServerAppPackaging, DockerPlugin)
+//enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
+enablePlugins(PlayScala)
 
-dockerExposedPorts := Seq(8080, 8558, 25520)
+/*dockerExposedPorts := Seq(8080, 8558, 25520)
 dockerUpdateLatest := true
 dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 dockerUsername := sys.props.get("docker.username")
-dockerRepository := sys.props.get("docker.registry")
+dockerRepository := sys.props.get("docker.registry")*/
 
 libraryDependencies ++= {
   Seq(
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster-sharding" % akkaVersion,
+    "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
+    "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
+    "com.typesafe.akka" %% "akka-persistence" % akkaVersion,
+    "com.typesafe.akka" %% "akka-persistence-query" % akkaVersion,
+    "com.typesafe.akka" %% "akka-remote" % akkaVersion,
+    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
-    "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
-    "com.typesafe.akka" %% "akka-cluster-sharding-typed" % akkaVersion,
-    "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion,
-    "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
-    "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % akkaManagementVersion,
-    "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % akkaManagementVersion,
+    "com.lightbend.akka.management" %% "akka-management" % akkaManagementVersion,
     "com.lightbend.akka.management" %% "akka-management-cluster-http" % akkaManagementVersion,
-    "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
-    "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
+    "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % akkaManagementVersion,
+    "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % akkaManagementVersion,
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test)
 }
+
+//Typed
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-serialization-jackson" % akkaVersion,
+  "com.typesafe.akka" %% "akka-persistence-typed" % akkaVersion,
+)
+
+libraryDependencies ++= Seq(
+  "org.playframework.anorm" %% "anorm" % "2.6.7",
+  "net.codingwell" %% "scala-guice" % "4.2.6"
+
+)
+
+libraryDependencies ++= Seq(
+  jdbc,
+  evolutions,
+  ehcache,
+  guice
+)

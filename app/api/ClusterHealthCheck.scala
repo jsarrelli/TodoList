@@ -1,4 +1,4 @@
-package app
+package api
 
 import akka.actor.ActorSystem
 import akka.cluster.{Cluster, MemberStatus}
@@ -12,7 +12,7 @@ class ClusterHealthCheck(system: ActorSystem) extends (() => Future[Boolean]) {
   private val cluster = Cluster(system)
 
   override def apply(): Future[Boolean] = {
-    log.info("ClusterHealthCheck called")
+    log.info("api.ClusterHealthCheck called")
     Future.successful(cluster.selfMember.status == MemberStatus.Up)
   }
 }
