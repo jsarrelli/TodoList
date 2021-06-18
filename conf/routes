@@ -1,1 +1,1 @@
-GET        /list        controllers.ListController.socket()
+GET        /list/:listId        controllers.ListController.socket(listId)

@@ -2,9 +2,12 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.cluster.sharding.ShardRegion
+import controllers.Formatters
 import models.{Task, TodoList}
+import play.api.libs.json.JsValue
 
 import scala.collection.mutable
+import scala.util.Try
 
 
 sealed trait Command {
@@ -21,62 +24,73 @@ final case class UpdateTask(listId: Long, taskId: Long, description: String) ext
 
 final case class GetList(listId: Long) extends Command
 
-final case class SyncClient(listId: Long, client: ActorRef) extends Command
+final case class SyncClient(listId: Long, client: ActorRef)
 
 
-sealed trait Event
+sealed trait Response
 
-final case class TaskCreated(task: Task) extends Event
+final case class TaskCreated(task: Task) extends Response
 
-final case class TaskRemoved(taskId: Long) extends Event
+final case class TaskRemoved(taskId: Long) extends Response
 
-final case class TaskCompleted(taskId: Long) extends Event
+final case class TaskCompleted(taskId: Long) extends Response
 
-final case class TaskUpdated(task: Task) extends Event
+final case class TaskUpdated(task: Task) extends Response
 
-final case class State(list: TodoList) extends Event
+final case class State(list: TodoList) extends Response
 
 
-class ListActor extends Actor with ActorLogging {
+class ListActor extends Actor with ActorLogging with Formatters {
 
   val clients = mutable.Set.empty[ActorRef]
   val id: String = self.path.name
-  var state: TodoList = TodoList(id.toLong, "List", List.empty[Task])
+  log.info(s"Name es $id")
+  var state: TodoList = TodoList(12, "Bufa List", List.empty[Task])
   var taskIds: Long = 0
 
-  override def receive: Receive = command => {
-    val client = sender()
-    clients add client
+  override def receive: Receive = {
+    case CreateTask(_, description) =>
+      val (newState, newTask) = state.addTask(description, taskIds)
+      val event = TaskCreated(newTask)
+      taskIds = taskIds + 1
+      updateState(newState)
+      notifyClients(event)
 
-    command match {
-      case CreateTask(_, description) =>
-        val (newState, newTask) = state.addTask(description, taskIds)
-        val event = TaskCreated(newTask)
-        taskIds = taskIds + 1
-        updateState(newState)
-        notifyClients(event)
+    case RemoveTask(_, taskId) =>
+      val newState = state.removeTask(taskId)
+      val event = TaskRemoved(taskId)
+      updateState(newState)
+      notifyClients(event)
 
-      case RemoveTask(_, taskId) =>
-        val newState = state.removeTask(taskId)
-        val event = TaskRemoved(taskId)
-        updateState(newState)
-        notifyClients(event)
-
-      case CompleteTask(_, taskId) =>
-        val newState = state.completeTask(taskId)
-        val event = TaskCompleted(taskId)
-        updateState(newState)
-        notifyClients(event)
-
-      case _: GetList =>
-        val client = sender()
-        client ! State(state)
+    case CompleteTask(_, taskId) =>
+      val newState = state.completeTask(taskId)
+      val event = TaskCompleted(taskId)
+      updateState(newState)
+      notifyClients(event)
+    case UpdateTask(_,taskId,description) =>Try{
+      val (newState,updateTask) = state.updateTask(taskId,description)
+      val event =  TaskUpdated(updateTask)
+      updateState(newState)
+      notifyClients(event)
+    } recover{
+      case ex => log.error("Failed",ex)
+        //TODO notify client
     }
+    case _: GetList =>
+      val client = sender()
+      sendState(client)
+    case SyncClient(listID, client) =>
+      log.info(s"Id es :$listID")
+      //TODO not working properly, repeating same client
+      clients.add(client)
+      sendState(client)
   }
 
-  def notifyClients(event: Event): Unit = {
-    clients.foreach(_ ! event)
+  def notifyClients(event: Response): Unit = {
+    clients.foreach(_ ! responseToJson(event))
   }
+
+  def sendState(client: ActorRef): Unit = client ! responseToJson(State(state))
 
   def updateState(newState: TodoList): Unit = this.state = newState
 }

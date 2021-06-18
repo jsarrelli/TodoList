@@ -1,19 +1,25 @@
 package actors
 
 import akka.actor._
+import controllers.Formatters
+import play.api.libs.json.JsValue
 
 object WebSocketActor {
-  def props(client: ActorRef, listRegion: ActorRef): Props = {
-    Props(new WebSocketActor(client, listRegion))
+  def props(listId: Long, client: ActorRef, listRegion: ActorRef): Props = {
+    Props(new WebSocketActor(listId, client, listRegion))
   }
 }
 
+class WebSocketActor(listId: Long, client: ActorRef, listRegion: ActorRef) extends Actor with ActorLogging with Formatters {
 
-class WebSocketActor(client: ActorRef, listRegion: ActorRef) extends Actor with ActorLogging {
+  override def preStart(): Unit = {
+    listRegion tell(SyncClient(listId, client), client)
+  }
 
   def receive: Receive = {
-    case msg =>
-      log.info("El web socket lo recibio")
-      listRegion tell(msg, client)
+    case message: JsValue =>
+      val command = jsonToCommand(message)
+      log.debug(s"Web socket received message ${command.getClass.getSimpleName}.. forwarding to actor")
+      listRegion tell(command, client)
   }
 }

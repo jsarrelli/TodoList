@@ -8,7 +8,19 @@ case class TodoList(listId: Long, name: String, tasks: List[Task]) {
   }
 
   def removeTask(taskId: Long): TodoList = {
-    copy(tasks = tasks.dropWhile(_.taskId == taskId))
+    copy(tasks = tasks.filter(_.taskId != taskId))
+  }
+
+  def updateTask(taskId: Long, newDescription: String): (TodoList, Task) = {
+    val updatedTask = tasks.find(_.taskId == taskId)
+      .getOrElse(throw new Exception(s"TaskId:$taskId not found"))
+      .copy(description = newDescription)
+
+    val updatedTasks = tasks.collect {
+      case task if task.taskId == taskId => updatedTask
+      case task => task
+    }
+    (copy(tasks = updatedTasks),updatedTask)
   }
 
   def completeTask(taskId: Long): TodoList = {

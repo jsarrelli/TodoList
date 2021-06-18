@@ -1,9 +1,9 @@
 package controllers
 
-import actors.{Command, Event, ListActor, WebSocketActor}
+import actors.{Command, ListActor, Response, WebSocketActor}
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.streams.ActorFlow
 import play.api.mvc.WebSocket.MessageFlowTransformer
 import play.api.mvc._
@@ -19,13 +19,12 @@ class ListController @Inject()(cc: ControllerComponents)(implicit system: ActorS
 
 
   //TODO do better, needs to include its class type
-  implicit val commandFormat  = Json.format[Command]
-  implicit val eventFormat = Json.format[Event]
-  implicit val messageFlowTransformer = MessageFlowTransformer.jsonMessageFlowTransformer[Command, Event]
 
-  def socket(): WebSocket = WebSocket.accept[Command, Event] { _ =>
-    ActorFlow.actorRef { out =>
-      WebSocketActor.props(out, listActor)
+  implicit val messageFlowTransformer = MessageFlowTransformer.jsonMessageFlowTransformer[JsValue, JsValue]
+
+  def socket(listId: String): WebSocket = WebSocket.accept[JsValue, JsValue] { _ =>
+    ActorFlow.actorRef { client =>
+      WebSocketActor.props(listId.toLong, client, listActor)
     }
   }
 }
