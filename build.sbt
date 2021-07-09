@@ -62,7 +62,8 @@ libraryDependencies ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.playframework.anorm" %% "anorm" % "2.6.7",
-  "net.codingwell" %% "scala-guice" % "4.2.6"
+  "net.codingwell" %% "scala-guice" % "4.2.6",
+  "org.scalatest" %% "scalatest" % "3.2.9" % "test"
 
 )
 
