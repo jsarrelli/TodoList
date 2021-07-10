@@ -1,4 +1,0 @@
-{ 	"command_type":"create_task", 	"list_id": 1, 	"description" :"apagar el horno" }
-{ 	"command_type":"remove_task", 	"list_id": 1, 	"task_id":0 }
-{ 	"command_type":"update_task", 	"list_id": 1, 	"task_id":0, "description":"el agua del mate" }
-{ 	"command_type":"get_list", "list_id":1 }

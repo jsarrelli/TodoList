@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.cluster.sharding.ShardRegion
-import akka.event.LoggingReceive
+import akka.event.{Logging, LoggingReceive}
 import controllers.Formatters
 import models.{Task, TodoList}
 
@@ -24,10 +24,6 @@ final case class DeleteTask(listId: Long, taskId: Long) extends ListCommand
 
 final case class GetList(listId: Long) extends ListCommand
 
-sealed trait Response
-
-final case class ListState(state: TodoList)
-
 trait ListEvent
 
 final case class ListCreated(list: TodoList) extends ListEvent
@@ -43,8 +39,10 @@ final case class TaskUpdated(task: Task) extends ListEvent
 
 class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with ActorLogging with Formatters {
 
+  val logger = Logging(context.system, this)
+
   val id: String = self.path.name
-  log.info(s"Actor created: $id")
+  logger.info(s"Actor created: $id")
 
   var state: TodoList = TodoList.emptyList()
   var taskIds: Long = 0
@@ -74,6 +72,7 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with ActorLoggin
       updateState(newState)
 
     case _: GetList =>
+      println("recibi algoo")
       val client = sender()
       sendState(client)
   }

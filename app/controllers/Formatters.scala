@@ -26,6 +26,11 @@ trait Formatters {
   implicit val taskFormat = Json.format[Task]
   implicit val listFormat = Json.format[TodoList]
 
+
+  implicit val listStateFormat = Json.format[ListState]
+  implicit val webSocketResponse = Json.format[Response]
+
+
   implicit val createListFormat = Json.format[CreateList]
   implicit val createTaskFormat = Json.format[CreateTask]
   implicit val removeTaskFormat = Json.format[DeleteTask]
