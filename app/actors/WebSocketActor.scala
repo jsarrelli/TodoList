@@ -29,7 +29,7 @@ class WebSocketActor(client: ActorRef, listRegion: ActorRef, eventBus: EventBusI
 
     case listCreated: ListCreated =>
       logger.debug("New list has been created")
-      val listId = listCreated.list.listId
+      val listId = listCreated.listId
       listRegion.tell(GetList(listId), client)
   }
 }

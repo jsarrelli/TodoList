@@ -13,16 +13,5 @@ class FormattersSpec extends AnyFlatSpec with Matchers with Formatters {
     (taskJson\"type").as[String] shouldBe "CREATE_TASK"
   }
 
-  "serialize" should
-    "serialize CreateList" in {
-
-    val createList =  CreateList(1234,"My List")
-    val jsonCommand = Json.toJson(createList)
-      val jsonString =
-        """"""
-      val json = Json.parse(jsonString)
-      json.as[CreateList].listId shouldBe 1234
-    }
-
 
 }
