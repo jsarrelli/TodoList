@@ -1,7 +1,7 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import akka.cluster.sharding.ShardRegion
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
 import akka.event.Logging
 import akka.persistence.{PersistentActor, SnapshotOffer}
 import controllers.Formatters
@@ -64,6 +64,7 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
   override def receiveCommand: Receive = {
 
     case CreateList(listId, name) =>
+      //TODO weird, could potentially lead to multiple creations of the same list entity
       val event = ListCreated(listId, name)
       persistAndUpdateState(event)
 

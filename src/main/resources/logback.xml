@@ -11,7 +11,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>
         <encoder>
-            <pattern>%level %logger %msg%n</pattern>
+            <pattern>%level  %msg%n</pattern>
         </encoder>
     </appender>
 

@@ -5,12 +5,17 @@ eval $(minikube -p minikube docker-env)
 sbt docker:publishLocal
 
 export KUBECONFIG=~/.kube/config
+export PLAY_HTTP_PORT=8080
 kubectl config set-context docker-desktop
 
 kubectl apply -f kubernetes/namespace.json
 kubectl config set-context --current --namespace=todolist-app-1
 kubectl apply -f kubernetes/akka-cluster.yml
-kubectl expose deployment todolist-app --type=LoadBalancer --name=todolist-app-service
+kubectl expose deployment todolist-app --name=todolist-app-service --type=LoadBalancer
+
+#minikube tunnel
+#kubectl get svc
+#kubectl delete namespaces todolist-app-1
 
 for i in {1..10}
 do

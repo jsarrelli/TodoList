@@ -1,22 +1,13 @@
 package api
 
 import actors.{EventBusImpl, ListActor}
-import akka.actor.{ActorRef, ActorSystem}
-import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
-import akka.management.cluster.bootstrap.ClusterBootstrap
-import akka.management.javadsl.AkkaManagement
-import akka.stream.Materializer
+import akka.actor.ActorRef
 import com.google.inject.AbstractModule
-import com.google.inject.name.Names
-import models.TodoList
 import net.codingwell.scalaguice.ScalaModule
 import play.api.libs.concurrent.AkkaGuiceSupport
 
-import scala.concurrent.ExecutionContextExecutor
-
 
 class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModule {
-
 
   override def configure(): Unit = {
     /*
@@ -24,7 +15,6 @@ class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModu
         implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
         implicit val materializer: Materializer = Materializer(actorSystem)
     */
-
 
     //Cluster Sharding
 
@@ -37,11 +27,10 @@ class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModu
           extractShardId = ListActor.extractShardId
         )
     */
-    val eventBus = new EventBusImpl
 
     //bind(classOf[ActorSystem]).annotatedWith(Names.named("TodoListSystem")).toInstance(actorSystem)
-    bindActor[ListActor]("ListRegion")
     bind(classOf[EventBusImpl]).asEagerSingleton()
+    bind(classOf[Application]).asEagerSingleton()
 
 
     // AkkaManagement.get(actorSystem).start()

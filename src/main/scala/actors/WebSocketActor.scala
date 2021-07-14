@@ -1,6 +1,8 @@
 package actors
 
+import actors.ListActor.props
 import akka.actor._
+import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import akka.event.Logging
 import models.TodoList
 
@@ -9,12 +11,19 @@ sealed trait Response
 final case class ListState(state: TodoList) extends Response
 
 object WebSocketActor {
-  def props(client: ActorRef, listRegion: ActorRef, eventBusImpl: EventBusImpl): Props = {
-    Props(new WebSocketActor(client, listRegion, eventBusImpl))
+  def props(client: ActorRef, eventBusImpl: EventBusImpl): Props = {
+    Props(new WebSocketActor(client, eventBusImpl))
   }
 }
 
-class WebSocketActor(client: ActorRef, listRegion: ActorRef, eventBus: EventBusImpl) extends Actor with ActorLogging {
+class WebSocketActor(client: ActorRef, eventBus: EventBusImpl) extends Actor with ActorLogging {
+
+  val listRegion = ClusterSharding(context.system).start(
+    typeName = "List",
+    entityProps = props(eventBus),
+    settings = ClusterShardingSettings(context.system),
+    extractEntityId = ListActor.extractEntityId,
+    extractShardId = ListActor.extractShardId)
 
   val logger = Logging(context.system, this)
 
