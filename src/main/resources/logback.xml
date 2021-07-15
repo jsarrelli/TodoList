@@ -15,6 +15,10 @@
         </encoder>
     </appender>
 
+    <logger name="play" level="INFO" />
+    <logger name="application" level="INFO" />
+    <logger name="akka" level="INFO" />
+
     <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>8192</queueSize>
         <neverBlock>true</neverBlock>

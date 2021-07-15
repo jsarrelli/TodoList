@@ -2,9 +2,9 @@
   "kind": "Namespace",
   "apiVersion": "v1",
   "metadata": {
-    "name": "todolist-app-1",
+    "name": "appka-1",
     "labels": {
-      "name": "todolist-app-1"
+      "name": "appka-1"
     }
   }
 }

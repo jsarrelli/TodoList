@@ -31,10 +31,6 @@ class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModu
     //bind(classOf[ActorSystem]).annotatedWith(Names.named("TodoListSystem")).toInstance(actorSystem)
     bind(classOf[EventBusImpl]).asEagerSingleton()
     bind(classOf[Application]).asEagerSingleton()
-
-
-    // AkkaManagement.get(actorSystem).start()
-    // ClusterBootstrap.get(actorSystem).start()
   }
 
 

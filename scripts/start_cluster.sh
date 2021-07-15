@@ -2,6 +2,8 @@
 
 set -exu
 eval $(minikube -p minikube docker-env)
+sbt clean
+sbt compile
 sbt docker:publishLocal
 
 export KUBECONFIG=~/.kube/config
@@ -9,13 +11,13 @@ export PLAY_HTTP_PORT=8080
 kubectl config set-context docker-desktop
 
 kubectl apply -f kubernetes/namespace.json
-kubectl config set-context --current --namespace=todolist-app-1
+kubectl config set-context --current --namespace=appka-1
 kubectl apply -f kubernetes/akka-cluster.yml
-kubectl expose deployment todolist-app --name=todolist-app-service --type=LoadBalancer
+kubectl expose deployment appka --name=appka-service --type=LoadBalancer
 
 #minikube tunnel
 #kubectl get svc
-#kubectl delete namespaces todolist-app-1
+#kubectl delete namespaces appka-1
 
 for i in {1..10}
 do
@@ -31,7 +33,7 @@ then
   exit -1
 fi
 
-POD=$(kubectl get pods | grep todolist-app | grep Running | head -n1 | awk '{ print $1 }')
+POD=$(kubectl get pods | grep appka | grep Running | head -n1 | awk '{ print $1 }')
 
 for i in {1..10}
 do
@@ -45,7 +47,7 @@ kubectl get pods
 
 echo "Logs"
 echo "=============================="
-for POD in $(kubectl get pods | grep todolist-app | awk '{ print $1 }')
+for POD in $(kubectl get pods | grep appka | awk '{ print $1 }')
 do
   echo "Logging for $POD"
   kubectl logs $POD
@@ -58,5 +60,3 @@ then
 
   exit -1
 fi
-
-minikube service todolist-app-service -n todolist-app-1 --url

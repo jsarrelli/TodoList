@@ -19,14 +19,14 @@ fork in run := true
 Compile / run / fork := true
 
 
-//enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
-enablePlugins(PlayScala)
+enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
 
-/*dockerExposedPorts := Seq(8080, 8558, 25520)
+
+dockerExposedPorts := Seq(8080, 8558, 25520)
 dockerUpdateLatest := true
-dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 dockerUsername := sys.props.get("docker.username")
-dockerRepository := sys.props.get("docker.registry")*/
+dockerRepository := sys.props.get("docker.registry")
+dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 
 libraryDependencies ++= {
   Seq(
