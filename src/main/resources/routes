@@ -1,1 +1,0 @@
-GET        /list        controllers.ListController.socket()

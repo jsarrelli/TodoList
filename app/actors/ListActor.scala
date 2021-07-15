@@ -5,7 +5,7 @@ import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardReg
 import akka.event.Logging
 import akka.persistence.{PersistentActor, SnapshotOffer}
 import controllers.Formatters
-import models.{Task, TodoList}
+import models.TodoList
 
 import javax.inject.Inject
 

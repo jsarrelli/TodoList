@@ -14,6 +14,9 @@ class ListController @Inject()(cc: ControllerComponents, eventBus: EventBusImpl)
 
   implicit val messageFlowTransformer: MessageFlowTransformer[ListCommand, Response] = MessageFlowTransformer.jsonMessageFlowTransformer[ListCommand, Response]
 
+
+  def index() = Action.apply(Ok("Hola papaaaaaaaa"))
+
   def socket(): WebSocket = WebSocket.accept[ListCommand, Response] { _ =>
     ActorFlow.actorRef { client =>
       WebSocketActor.props(client, eventBus)

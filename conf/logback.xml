@@ -15,9 +15,9 @@
         </encoder>
     </appender>
 
-    <logger name="play" level="INFO" />
-    <logger name="application" level="INFO" />
-    <logger name="akka" level="INFO" />
+    <logger name="play" level="DEBUG" />
+    <logger name="application" level="DEBUG" />
+    <logger name="akka" level="DEBUG" />
 
     <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>8192</queueSize>

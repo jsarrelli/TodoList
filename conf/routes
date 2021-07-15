@@ -1,0 +1,2 @@
+GET        /list        controllers.ListController.socket()
+GET        /            controllers.ListController.index()

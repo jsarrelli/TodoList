@@ -1,5 +1,4 @@
 import actors.{CreateList, CreateTask, ListCommand}
-import controllers.Formatters
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.Json

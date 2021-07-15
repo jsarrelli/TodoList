@@ -14,12 +14,17 @@ class Application @Inject()(system: ActorSystem, cc: ControllerComponents) exten
 
   val cluster = Cluster(system)
   system.log.info("Started [" + system + "], cluster.selfAddress = " + cluster.selfMember.address + ")")
+  system.log.info(system.name)
 
-  // Akka Management hosts the HTTP routes used by bootstrap
-  AkkaManagement(system).start()
 
-  // Starting the bootstrap process needs to be done explicitly
-  ClusterBootstrap(system).start()
+  if (!Option(System.getProperty("ENV")).contains("DEV")) {
+    // Akka Management hosts the HTTP routes used by bootstrap
+    AkkaManagement(system).start()
+
+    // Starting the bootstrap process needs to be done explicitly
+    ClusterBootstrap(system).start()
+  }
+
 }
 
 
