@@ -1,6 +1,3 @@
-import play.sbt.routes.RoutesKeys
-
-
 organization in ThisBuild := "com.lightbend"
 
 name := "todolist-app"
@@ -19,10 +16,13 @@ fork in run := true
 Compile / run / fork := true
 
 
-enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
+//enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
+enablePlugins(
+  PlayScala
+)
 
 
-dockerExposedPorts := Seq(8080, 8558, 25520)
+dockerExposedPorts := Seq(8080, 8558, 25520,9000)
 dockerUpdateLatest := true
 dockerUsername := sys.props.get("docker.username")
 dockerRepository := sys.props.get("docker.registry")
@@ -71,6 +71,11 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   jdbc,
   evolutions,
-  ehcache,
+  ws,
   guice
+)
+
+javaOptions in Universal ++= Seq(
+  "-Dpidfile.path=/dev/null",
+  "-Dhttp.port=8080"
 )

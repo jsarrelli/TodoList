@@ -18,9 +18,9 @@ spec:
     spec:
       containers:
         - name: appka
-          image: akka-sample-cluster-kubernetes:latest
+          image: todolist-app:latest
           # remove for real clusters, useful for minikube
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           readinessProbe:
             httpGet:
               path: /ready
@@ -68,10 +68,12 @@ metadata:
   name: read-pods
   namespace: appka-1
 subjects:
-  # Note the `name` line below. The first default refers to the namespace. The second refers to the service account name.
-  # For instance, `name: system:serviceaccount:myns:default` would refer to the default service account in namespace `myns`
-  - kind: User
-    name: system:serviceaccount:appka-1:default
+  # Uses the default service account.
+  # Consider creating a dedicated service account to run your
+  # Akka Cluster services and binding the role to that one.
+  - kind: ServiceAccount
+    name: default
+    namespace: appka-1
 roleRef:
   kind: Role
   name: pod-reader
