@@ -11,7 +11,6 @@ lazy val akkaManagementVersion = "1.0.9"
 ThisBuild / dynverSeparator := "-"
 
 scalacOptions := Seq("-feature", "-unchecked", "-deprecation", "-encoding", "utf8")
-classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.AllLibraryJars
 fork in run := true
 Compile / run / fork := true
 
@@ -20,13 +19,6 @@ Compile / run / fork := true
 enablePlugins(
   PlayScala
 )
-
-
-dockerExposedPorts := Seq(8080, 8558, 25520,9000)
-dockerUpdateLatest := true
-dockerUsername := sys.props.get("docker.username")
-dockerRepository := sys.props.get("docker.registry")
-dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 
 libraryDependencies ++= {
   Seq(

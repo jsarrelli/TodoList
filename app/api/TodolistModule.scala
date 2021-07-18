@@ -21,7 +21,7 @@ object TodolistModule {
   class TodolistSystem(val system: ActorSystem)
 }
 
-class TodoListModule(environment: Environment, configuration: Configuration)
+class TodolistModule(environment: Environment, configuration: Configuration)
   extends Module {
 
   import TodolistModule._
