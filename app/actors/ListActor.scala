@@ -4,7 +4,6 @@ import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
 import akka.event.Logging
 import akka.persistence.{PersistentActor, SnapshotOffer}
-import controllers.Formatters
 import models.TodoList
 
 import javax.inject.Inject
@@ -49,7 +48,7 @@ final case class TaskOrderUpdated(taskId: Long, order: Int) extends ListEvent {
   override def applyTo(state: TodoList): TodoList = state.updateTaskOrder(taskId, order)
 }
 
-class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentActor with ActorLogging with Formatters {
+class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentActor with ActorLogging  {
 
   val logger = Logging(context.system, this)
 

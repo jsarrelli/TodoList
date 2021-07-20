@@ -1,4 +1,3 @@
-import play.sbt.routes.RoutesKeys
 
 
 organization in ThisBuild := "com.lightbend"
@@ -19,7 +18,7 @@ fork in run := true
 Compile / run / fork := true
 
 
-enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
+enablePlugins(JavaServerAppPackaging, DockerPlugin)
 
 
 dockerExposedPorts := Seq(8080, 8558, 25520)
@@ -61,16 +60,8 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.playframework.anorm" %% "anorm" % "2.6.7",
   "net.codingwell" %% "scala-guice" % "4.2.6",
   "org.scalatest" %% "scalatest" % "3.2.9" % "test",
   "com.twitter" %% "chill-akka" % "0.9.5",
   "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "3.0.6"
-)
-
-libraryDependencies ++= Seq(
-  jdbc,
-  evolutions,
-  ehcache,
-  guice
 )

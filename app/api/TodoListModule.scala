@@ -1,38 +1,49 @@
 package api
 
 import actors.{EventBusImpl, ListActor}
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, ActorSystem}
+import akka.cluster.Cluster
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
+import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.server.Directives.{complete, path}
+import akka.management.cluster.bootstrap.ClusterBootstrap
+import akka.management.scaladsl.AkkaManagement
 import com.google.inject.AbstractModule
 import net.codingwell.scalaguice.ScalaModule
 import play.api.libs.concurrent.AkkaGuiceSupport
 
+import scala.io.StdIn
 
-class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModule {
 
-  override def configure(): Unit = {
-    /*
-        implicit val actorSystem: ActorSystem = ActorSystem("todolist-app")
-        implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
-        implicit val materializer: Materializer = Materializer(actorSystem)
-    */
+object TodoListModule extends App {
 
-    //Cluster Sharding
+  implicit val system = ActorSystem("TodolistDomain")
+  implicit val executionContext = system.dispatcher
+  val cluster = Cluster(system)
+  system.log.info("Started [" + system + "], cluster.selfAddress = " + cluster.selfMember.address + ")")
+  system.log.info(system.name)
 
-    /*
-        val listRegion: ActorRef = ClusterSharding(actorSystem).start(
-          typeName = "List",
-          entityProps = ListActor.props(),
-          settings = ClusterShardingSettings(actorSystem),
-          extractEntityId = ListActor.extractEntityId,
-          extractShardId = ListActor.extractShardId
-        )
-    */
+  // Akka Management hosts the HTTP routes used by bootstrap
+  AkkaManagement(system).start()
 
-    //bind(classOf[ActorSystem]).annotatedWith(Names.named("TodoListSystem")).toInstance(actorSystem)
-    bind(classOf[EventBusImpl]).asEagerSingleton()
-    bind(classOf[Application]).asEagerSingleton()
-  }
+  // Starting the bootstrap process needs to be done explicitly
+  ClusterBootstrap(system).start()
 
+  val route =
+    path("hello") {
+      Directives.get {
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+      }
+    }
+
+  val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
+
+  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+  StdIn.readLine() // let it run until user presses return
+  bindingFuture
+    .flatMap(_.unbind()) // trigger unbinding from the port
+    .onComplete(_ => system.terminate()) // and shutdown when done
 
 }
 
