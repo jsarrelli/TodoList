@@ -50,11 +50,11 @@ final case class TaskOrderUpdated(taskId: Long, order: Int) extends ListEvent {
   override def applyTo(state: TodoList): TodoList = state.updateTaskOrder(taskId, order)
 }
 
-class ListActor @Inject()(eventBus: EventBusImpl, listId: String) extends Actor with PersistentActor with ActorLogging with Formatters {
+class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentActor with ActorLogging with Formatters {
 
-  val logger = Logging(context.system, this)
+  val listId: String = self.path.parent.name
 
-  logger.info(s"Actor created: $listId")
+  log.info(s"Actor created: $listId")
 
   override def persistenceId: String = s"List-$listId"
 
@@ -67,7 +67,7 @@ class ListActor @Inject()(eventBus: EventBusImpl, listId: String) extends Actor 
         val event = ListCreated(listId, name)
         persistAndUpdateState(event)
       } else {
-        logger.info(s"Actor $listId already created")
+        log.warning(s"Actor $listId already created")
       }
 
     case CreateTask(_, taskId, description) =>
@@ -137,11 +137,6 @@ object ListActor {
     case _ => throw new IllegalArgumentException()
   }
 
-  def props(eventBus: EventBusImpl, listId: String): Props = Props(new ListActor(eventBus, listId))
-
-  /**
-   * TODO: workaround until implementing sharding
-   */
-  def props(eventBus: EventBusImpl): Props = Props(new ListActor(eventBus, "invalid"))
+  def props(eventBus: EventBusImpl): Props = Props(new ListActor(eventBus))
 
 }

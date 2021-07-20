@@ -1,4 +1,7 @@
+import com.typesafe.sbt.packager.docker.DockerChmodType
 import play.sbt.routes.RoutesKeys
+import com.typesafe.sbt.packager.docker.DockerPermissionStrategy
+
 
 
 name := "todolist-app"
@@ -18,14 +21,17 @@ fork in run := true
 Compile / run / fork := true
 
 
-//enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
-enablePlugins(PlayScala)
+dockerChmodType := DockerChmodType.UserGroupWriteExecute
+dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
 
-/*dockerExposedPorts := Seq(8080, 8558, 25520)
+enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
+//enablePlugins(PlayScala)
+
+dockerExposedPorts := Seq(8080, 8558, 25520, 9000)
 dockerUpdateLatest := true
 dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 dockerUsername := sys.props.get("docker.username")
-dockerRepository := sys.props.get("docker.registry")*/
+dockerRepository := sys.props.get("docker.registry")
 
 libraryDependencies ++= {
   Seq(
@@ -67,7 +73,7 @@ libraryDependencies ++= Seq(
   "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "3.0.6"
 )
 
-
+//Elastic Search
 libraryDependencies ++= Seq(
   "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % elastic4sVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % "test"

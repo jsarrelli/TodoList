@@ -23,7 +23,6 @@ object WebSocketActor {
 class WebSocketActor(client: ActorRef, listRegion: ActorRef, eventBus: EventBusImpl) extends Actor with ActorLogging {
 
   val logger = Logging(context.system, this)
-  val lists: mutable.Map[String, ActorRef] = mutable.Map.empty[String, ActorRef]
 
   override def preStart(): Unit = {
     eventBus.subscribe(self, classOf[ListCreated])
@@ -33,23 +32,11 @@ class WebSocketActor(client: ActorRef, listRegion: ActorRef, eventBus: EventBusI
   def receive: Receive = {
     case message: ListCommand =>
       logger.debug(s"Web socket received message ${message.getClass.getSimpleName}.. forwarding to actor")
-      val actorRef = getReference(message.listId.toString)
-      actorRef.tell(message, client)
+      listRegion.tell(message, client)
 
     case listCreated: ListCreated =>
       logger.debug("New list has been created")
       val listId = listCreated.listId
-      val actorRef = getReference(listCreated.listId.toString)
-      actorRef.tell(GetList(listId), client)
-  }
-
-
-  /**
-   * Should be replaced with sharding
-   */
-  private def getReference(aggregateId: String): ActorRef = {
-    val actorRef = lists.getOrElse(aggregateId, context.actorOf(ListActor.props(eventBus, aggregateId)))
-    lists.addOne((aggregateId, actorRef))
-    actorRef
+      listRegion.tell(GetList(listId), client)
   }
 }
