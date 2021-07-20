@@ -52,7 +52,7 @@ final case class TaskOrderUpdated(taskId: Long, order: Int) extends ListEvent {
 
 class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentActor with ActorLogging with Formatters {
 
-  val listId: String = self.path.parent.name
+  val listId: String = self.path.name
 
   log.info(s"Actor created: $listId")
 
