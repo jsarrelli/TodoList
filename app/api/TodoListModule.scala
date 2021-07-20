@@ -37,7 +37,6 @@ class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModu
           extractShardId = ListActor.extractShardId
         )
     */
-    val eventBus = new EventBusImpl
 
     //bind(classOf[ActorSystem]).annotatedWith(Names.named("TodoListSystem")).toInstance(actorSystem)
     bindActor[ListActor]("ListRegion")

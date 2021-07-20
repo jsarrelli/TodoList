@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.cluster.sharding.ShardRegion
 import akka.event.Logging
 import akka.persistence.{PersistentActor, SnapshotOffer}
+import api.ElasticSearch
 import controllers.Formatters
 import models.{Task, TodoList}
 
@@ -49,13 +50,11 @@ final case class TaskOrderUpdated(taskId: Long, order: Int) extends ListEvent {
   override def applyTo(state: TodoList): TodoList = state.updateTaskOrder(taskId, order)
 }
 
-class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentActor with ActorLogging with Formatters {
+class ListActor @Inject()(eventBus: EventBusImpl, listId: String) extends Actor with PersistentActor with ActorLogging with Formatters {
 
   val logger = Logging(context.system, this)
 
   logger.info(s"Actor created: $listId")
-
-  val listId: String = self.path.name
 
   override def persistenceId: String = s"List-$listId"
 
@@ -64,8 +63,12 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
   override def receiveCommand: Receive = {
 
     case CreateList(listId, name) =>
-      val event = ListCreated(listId, name)
-      persistAndUpdateState(event)
+      if (state == TodoList.emptyList()) {
+        val event = ListCreated(listId, name)
+        persistAndUpdateState(event)
+      } else {
+        logger.info(s"Actor $listId already created")
+      }
 
     case CreateTask(_, taskId, description) =>
       val event = TaskCreated(taskId, description)
@@ -97,7 +100,10 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
     updateState(newState)
 
 
-    if (event.isInstanceOf[ListCreated]) eventBus.publish(event)
+    if (event.isInstanceOf[ListCreated]) {
+      eventBus.publish(event)
+      ElasticSearch.indexListId(state.listId.toString, state.name)
+    }
   }
 
   def saveSnapshot(): Unit = {
@@ -131,6 +137,11 @@ object ListActor {
     case _ => throw new IllegalArgumentException()
   }
 
-  def props(eventBus: EventBusImpl): Props = Props(new ListActor(eventBus))
+  def props(eventBus: EventBusImpl, listId: String): Props = Props(new ListActor(eventBus, listId))
+
+  /**
+   * TODO: workaround until implementing sharding
+   */
+  def props(eventBus: EventBusImpl): Props = Props(new ListActor(eventBus, "invalid"))
 
 }

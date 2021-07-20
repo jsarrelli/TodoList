@@ -68,6 +68,14 @@ libraryDependencies ++= Seq(
   "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "3.0.6"
 )
 
+val elastic4sVersion = "7.12.3"
+libraryDependencies ++= Seq(
+  // recommended client for beginners
+  "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % elastic4sVersion,
+  // test kit
+  "com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % "test"
+)
+
 libraryDependencies ++= Seq(
   jdbc,
   evolutions,
