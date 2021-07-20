@@ -1,4 +1,6 @@
 target
+.metals
+.vscode
 
 
 /.idea/
