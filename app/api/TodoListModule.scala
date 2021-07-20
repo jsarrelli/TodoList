@@ -10,24 +10,40 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names
 import models.TodoList
 import net.codingwell.scalaguice.ScalaModule
+import play.api.inject.{Binding, Module}
+import play.api.{Configuration, Environment}
 import play.api.libs.concurrent.AkkaGuiceSupport
 
+import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContextExecutor
 
 
-class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModule {
+object TodoListModule {
+  val catalogActorSystemName = "Todolist-Domain"
+
+  class TodoListSystem(val system: ActorSystem)
+}
+
+class TodoListModule(environment: Environment, configuration: Configuration) extends Module {
+
+  import TodoListModule._
+
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    implicit val actorSystem: ActorSystem =
+      ActorSystem(catalogActorSystemName, configuration.underlying.getConfig(catalogActorSystemName))
+    implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
+    implicit val materializer: Materializer = Materializer(actorSystem)
+    implicit val implicitEnv: Environment = environment
+    implicit val conf: Configuration = configuration
+
+    val eventBusImpl = new EventBusImpl()
 
 
-  override def configure(): Unit = {
-    /*
-        implicit val actorSystem: ActorSystem = ActorSystem("todolist-app")
-        implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
-        implicit val materializer: Materializer = Materializer(actorSystem)
-    */
 
+    // AkkaManagement.get(actorSystem).start()
+    // ClusterBootstrap.get(actorSystem).start()
 
-    //Cluster Sharding
-
+    //TODO replace it sharding
     /*
         val listRegion: ActorRef = ClusterSharding(actorSystem).start(
           typeName = "List",
@@ -37,16 +53,12 @@ class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModu
           extractShardId = ListActor.extractShardId
         )
     */
+    val listRegion = actorSystem.actorOf(ListActor.props(eventBusImpl))
 
-    //bind(classOf[ActorSystem]).annotatedWith(Names.named("TodoListSystem")).toInstance(actorSystem)
-    bindActor[ListActor]("ListRegion")
-    bind(classOf[EventBusImpl]).asEagerSingleton()
-
-
-    // AkkaManagement.get(actorSystem).start()
-    // ClusterBootstrap.get(actorSystem).start()
+    bind[ActorRef].qualifiedWith("ListRegion").toInstance(listRegion) ::
+      bind[EventBusImpl].toInstance(eventBusImpl) ::
+      Nil
   }
-
 
 }
 

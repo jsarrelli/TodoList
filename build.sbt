@@ -1,14 +1,13 @@
 import play.sbt.routes.RoutesKeys
 
 
-organization in ThisBuild := "com.lightbend"
-
 name := "todolist-app"
 
 scalaVersion := "2.13.0"
 lazy val akkaHttpVersion = "10.2.3"
-lazy val akkaVersion = "2.6.12"
-lazy val akkaManagementVersion = "1.0.9"
+lazy val akkaVersion = "2.6.14"
+lazy val akkaManagementVersion = "1.1.1"
+val elastic4sVersion = "7.12.3"
 
 // make version compatible with docker for publishing
 ThisBuild / dynverSeparator := "-"
@@ -55,9 +54,9 @@ libraryDependencies ++= {
 //Typed
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-serialization-jackson" % akkaVersion,
-  "com.typesafe.akka" %% "akka-persistence-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
 )
 
 libraryDependencies ++= Seq(
@@ -68,11 +67,9 @@ libraryDependencies ++= Seq(
   "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "3.0.6"
 )
 
-val elastic4sVersion = "7.12.3"
+
 libraryDependencies ++= Seq(
-  // recommended client for beginners
   "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % elastic4sVersion,
-  // test kit
   "com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % "test"
 )
 
