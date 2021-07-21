@@ -1,8 +1,4 @@
-import com.typesafe.sbt.packager.docker.DockerChmodType
-import play.sbt.routes.RoutesKeys
-import com.typesafe.sbt.packager.docker.DockerPermissionStrategy
-
-
+import com.typesafe.sbt.packager.docker.{DockerChmodType, DockerPermissionStrategy}
 
 name := "todolist-app"
 
@@ -20,18 +16,15 @@ classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.AllLibraryJars
 fork in run := true
 Compile / run / fork := true
 
-
 dockerChmodType := DockerChmodType.UserGroupWriteExecute
 dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
-
-enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
-//enablePlugins(PlayScala)
-
 dockerExposedPorts := Seq(8080, 8558, 25520, 9000)
 dockerUpdateLatest := true
 dockerBaseImage := "adoptopenjdk:11-jre-hotspot"
 dockerUsername := sys.props.get("docker.username")
 dockerRepository := sys.props.get("docker.registry")
+
+enablePlugins(JavaServerAppPackaging, DockerPlugin, PlayScala)
 
 libraryDependencies ++= {
   Seq(

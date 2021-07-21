@@ -26,11 +26,14 @@ class TodoListModule(environment: Environment, configuration: Configuration) ext
   import TodoListModule._
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    implicit val actorSystem: ActorSystem = ActorSystem(todolistActorSystemName, configuration.underlying.getConfig(todolistActorSystemName))
+    implicit val conf: Config = configuration.get[String]("env") match {
+      case "LOCAL" => withSeedNodes(configuration)
+      case _ => configuration.underlying
+    }
+    implicit val actorSystem: ActorSystem = ActorSystem(todolistActorSystemName, conf.getConfig(todolistActorSystemName))
     implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
     implicit val materializer: Materializer = Materializer(actorSystem)
     implicit val implicitEnv: Environment = environment
-    implicit val conf: Configuration = configuration
 
 
     AkkaManagement.get(actorSystem).start()
@@ -51,6 +54,15 @@ class TodoListModule(environment: Environment, configuration: Configuration) ext
       Nil
   }
 
+  private def withSeedNodes(configuration: Configuration) = {
+    ConfigFactory
+      .empty()
+      .withValue(
+        s"$todolistActorSystemName.akka.cluster.seed-nodes",
+        ConfigValueFactory.fromIterable(List("akka://Todolist-Domain@192.168.200.7:25520").asJava)
+      )
+      .withFallback(configuration.underlying)
+  }
 }
 
 

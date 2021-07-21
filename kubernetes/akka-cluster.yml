@@ -6,7 +6,7 @@ metadata:
   name: todolist-app
   namespace: todolist-app-1
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: todolist-app
@@ -55,8 +55,13 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: REQUIRED_CONTACT_POINT_NR
-              value: "1"
-
+              value: "3"
+            - name: ELASTIC_SEARCH_URL
+              value: "http://172.16.238.10:9200"
+            - name: MONGO_URL
+              value: "mongodb://172.16.238.20:27018/todolist"
+            - name: ENV
+              value: "CLUSTER"
 
 ---
 kind: Role

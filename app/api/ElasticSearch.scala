@@ -13,9 +13,9 @@ object ElasticSearch {
   import com.sksamuel.elastic4s.ElasticDsl._
 
   //TODO look for these configs on application.conf
-  private val client = ElasticClient(JavaClient(ElasticProperties(s"http://127.0.0.1:9200")))
+  private val url = Option(System.getenv("ELASTIC_SEARCH_URL")).getOrElse("http://localhost:9200")
+  private val client = ElasticClient(JavaClient(ElasticProperties(url)))
   private val listIndex = "lists"
-
 
   generateListIndex()
 

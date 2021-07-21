@@ -32,11 +32,13 @@ class WebSocketActor(client: ActorRef, listRegion: ActorRef, eventBus: EventBusI
   def receive: Receive = {
     case message: ListCommand =>
       logger.debug(s"Web socket received message ${message.getClass.getSimpleName}.. forwarding to actor")
-      listRegion.tell(message, client)
+      listRegion forward (message, client)
 
     case listCreated: ListCreated =>
       logger.debug("New list has been created")
       val listId = listCreated.listId
-      listRegion.tell(GetList(listId), client)
+      listRegion forward (GetList(listId), client)
   }
+
+  //TODO do we need some validation for non-existing lists?
 }

@@ -99,7 +99,6 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
     val newState = event.applyTo(state)
     updateState(newState)
 
-
     if (event.isInstanceOf[ListCreated]) {
       eventBus.publish(event)
       ElasticSearch.indexListId(state.listId.toString, state.name)
