@@ -50,7 +50,7 @@ final case class TaskOrderUpdated(taskId: Long, order: Int) extends ListEvent {
   override def applyTo(state: TodoList): TodoList = state.updateTaskOrder(taskId, order)
 }
 
-class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentActor with ActorLogging with Formatters {
+class ListActor() extends Actor with PersistentActor with ActorLogging with Formatters {
 
   val listId: String = self.path.name
 
@@ -60,10 +60,11 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
 
   var state: TodoList = TodoList.emptyList()
 
-  override def receiveCommand: Receive = LoggingReceive {
+  val eventBus = EventBus.getActorRef(context.system)
+
+  override def receiveCommand: Receive = {
 
     case CreateList(listId, name) =>
-      log.info(s"Recibio un create de ${sender()}")
       if (state == TodoList.emptyList()) {
         val event = ListCreated(listId, name)
         persistAndUpdateState(event)
@@ -88,9 +89,6 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
       persistAndUpdateState(event)
 
     case _: GetList =>
-
-      log.info(s"Recibio un get de ${sender()}. Yo me llamo ${self}")
-
       sender() ! ListState(state)
   }
 
@@ -101,7 +99,7 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
     updateState(newState)
 
     if (event.isInstanceOf[ListCreated]) {
-      eventBus.publish(event)
+      eventBus ! event
       ElasticSearch.indexListId(state.listId.toString, state.name)
     }
   }
@@ -136,5 +134,5 @@ object ListActor {
     case _ => throw new IllegalArgumentException()
   }
 
-  def props(eventBus: EventBusImpl): Props = Props(new ListActor(eventBus))
+  def props(): Props = Props(new ListActor())
 }

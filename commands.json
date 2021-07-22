@@ -2,7 +2,7 @@
   "commands": [
     {
       "type": "CREATE_LIST",
-      "listId": 6666,
+      "listId": 4,
       "name": "My List"
     },
     {

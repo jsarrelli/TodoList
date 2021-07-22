@@ -15,32 +15,26 @@ final case class ListState(state: TodoList) extends Response
 final case class CurrentLists(lists: List[ListDescription]) extends Response
 
 object WebSocketActor {
-  def props(client: ActorRef, listRegion: ActorRef, eventBusImpl: EventBusImpl): Props = {
-    Props(new WebSocketActor(client, listRegion, eventBusImpl))
+  def props(client: ActorRef, listRegion: ActorRef): Props = {
+    Props(new WebSocketActor(client, listRegion))
   }
 }
 
-class WebSocketActor(client: ActorRef, listRegion: ActorRef, eventBus: EventBusImpl) extends Actor with ActorLogging {
+class WebSocketActor(client: ActorRef, listRegion: ActorRef) extends Actor with ActorLogging {
 
   override def preStart(): Unit = {
-    eventBus.subscribe(self, classOf[ListCreated])
-    ElasticSearch.getLists().map(lists => client ! CurrentLists(lists))
+    val eventBus = EventBus.getActorRef(context.system)
+    eventBus ! Subscribe(self)
+    ElasticSearch.getLists().foreach(lists => client ! CurrentLists(lists))
   }
 
-  def receive: Receive = LoggingReceive {
+  def receive: Receive = {
     case message: ListCommand =>
-      log.info(s"Web socket received message ${message.getClass.getSimpleName}.. forwarding to actor")
-      log.info(s"ClientRef: ${sender()}, WebSocketRef: ${self}")
-      listRegion ! message
+      listRegion tell (message,client)
 
     case listCreated: ListCreated =>
-      log.info("New list has been created")
       val listId = listCreated.listId
-      listRegion ! GetList(listId)
-
-    case msg: ListState =>
-      log.info(s"Respondiendole a este pelotudo desde ${self}")
-      client ! msg
+      listRegion tell(GetList(listId), client)
   }
 
   //TODO do we need some validation for non-existing lists?

@@ -1,7 +1,5 @@
 package api
 
-
-import actors.EventBusImpl
 import akka.actor.ActorSystem
 import com.google.inject.AbstractModule
 import controllers.ListController
@@ -20,7 +18,6 @@ class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModu
   override def configure(): Unit = {
     bind(classOf[ClusterStart]).asEagerSingleton()
     bind[ListController].asEagerSingleton()
-    bind(classOf[EventBusImpl]).asEagerSingleton()
   }
 }
 
