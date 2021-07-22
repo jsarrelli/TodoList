@@ -1,12 +1,12 @@
 package actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import akka.cluster.sharding.ShardRegion
-import akka.event.Logging
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
+import akka.event.LoggingReceive
 import akka.persistence.{PersistentActor, SnapshotOffer}
 import api.ElasticSearch
 import controllers.Formatters
-import models.{Task, TodoList}
+import models.TodoList
 
 import javax.inject.Inject
 
@@ -60,9 +60,10 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
 
   var state: TodoList = TodoList.emptyList()
 
-  override def receiveCommand: Receive = {
+  override def receiveCommand: Receive = LoggingReceive {
 
     case CreateList(listId, name) =>
+      log.info(s"Recibio un create de ${sender()}")
       if (state == TodoList.emptyList()) {
         val event = ListCreated(listId, name)
         persistAndUpdateState(event)
@@ -87,11 +88,11 @@ class ListActor @Inject()(eventBus: EventBusImpl) extends Actor with PersistentA
       persistAndUpdateState(event)
 
     case _: GetList =>
-      val client = sender()
-      sendState(client)
-  }
 
-  def sendState(client: ActorRef): Unit = client ! ListState(state)
+      log.info(s"Recibio un get de ${sender()}. Yo me llamo ${self}")
+
+      sender() ! ListState(state)
+  }
 
   def updateState(newState: TodoList): Unit = this.state = newState
 
@@ -131,11 +132,9 @@ object ListActor {
   val extractShardId: ShardRegion.ExtractShardId = {
     case msg: ListCommand => (msg.listId % numberOfShards).toString
     case ShardRegion.StartEntity(id) =>
-      // StartEntity is used by remembering entities feature
       (id.toLong % numberOfShards).toString
     case _ => throw new IllegalArgumentException()
   }
 
   def props(eventBus: EventBusImpl): Props = Props(new ListActor(eventBus))
-
 }

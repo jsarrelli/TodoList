@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor._
-import akka.event.Logging
+import akka.event.{Logging, LoggingReceive}
 import api.ElasticSearch
 import models.{ListDescription, TodoList}
 
@@ -22,22 +22,25 @@ object WebSocketActor {
 
 class WebSocketActor(client: ActorRef, listRegion: ActorRef, eventBus: EventBusImpl) extends Actor with ActorLogging {
 
-  val logger = Logging(context.system, this)
-
   override def preStart(): Unit = {
     eventBus.subscribe(self, classOf[ListCreated])
     ElasticSearch.getLists().map(lists => client ! CurrentLists(lists))
   }
 
-  def receive: Receive = {
+  def receive: Receive = LoggingReceive {
     case message: ListCommand =>
-      logger.debug(s"Web socket received message ${message.getClass.getSimpleName}.. forwarding to actor")
-      listRegion forward (message, client)
+      log.info(s"Web socket received message ${message.getClass.getSimpleName}.. forwarding to actor")
+      log.info(s"ClientRef: ${sender()}, WebSocketRef: ${self}")
+      listRegion ! message
 
     case listCreated: ListCreated =>
-      logger.debug("New list has been created")
+      log.info("New list has been created")
       val listId = listCreated.listId
-      listRegion forward (GetList(listId), client)
+      listRegion ! GetList(listId)
+
+    case msg: ListState =>
+      log.info(s"Respondiendole a este pelotudo desde ${self}")
+      client ! msg
   }
 
   //TODO do we need some validation for non-existing lists?
