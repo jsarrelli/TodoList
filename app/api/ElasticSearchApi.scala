@@ -2,21 +2,23 @@ package api
 
 import com.sksamuel.elastic4s.http.JavaClient
 import com.sksamuel.elastic4s.requests.indexes.IndexResponse
-import com.sksamuel.elastic4s.{ElasticClient, ElasticProperties, Hit, HitReader, Response}
+import com.sksamuel.elastic4s._
 import models.ListDescription
+import play.api.Configuration
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
 
-object ElasticSearch {
+class ElasticSearchApi @Inject()(configuration: Configuration) {
 
   import com.sksamuel.elastic4s.ElasticDsl._
 
   //TODO look for these configs on application.conf
-  private val url = Option(System.getenv("ELASTIC_SEARCH_URL")).getOrElse("http://localhost:9200")
-  private val client = ElasticClient(JavaClient(ElasticProperties(url)))
-  private val listIndex = "lists"
+  protected val url = configuration.get[String]("elastic-search.uri")
+  protected val client = ElasticClient(JavaClient(ElasticProperties(url)))
+  protected val listIndex = configuration.get[String]("elastic-search.list-index")
 
   generateListIndex()
 

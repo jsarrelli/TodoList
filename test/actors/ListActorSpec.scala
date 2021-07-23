@@ -17,15 +17,19 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
 
   override def afterAll(): Unit = {
     cleanCollections()
+    elasticSearch.deleteListIndex()
   }
 
-  case class ListActorTest(override val listId: String) extends ListActor
+  case class ListActorTest(override val listId: String) extends ListActor(elasticSearch)
+
 
   def newActor(listId: String): ActorRef = system.actorOf(Props(ListActorTest(listId)))
 
+  def randomId: Long = Random.nextInt(Int.MaxValue).toLong
+
   "CreateList" should {
     "create a list, set state and persist it" in {
-      val listId = Random.nextLong()
+      val listId = randomId
       val list = newActor(listId.toString)
 
       list ! CreateList(listId, "New List")
@@ -42,7 +46,7 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
     }
 
     "not recreate a list if it was previously created" in {
-      val listId = Random.nextLong()
+      val listId = randomId
       val list = newActor(listId.toString)
       list ! CreateList(listId, "First List")
       list ! CreateList(listId, "Another List")
@@ -50,18 +54,8 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
       val listState = expectMsgType[ListState]
       listState.state shouldBe TodoList(listId, "First List")
     }
-
-    "notify eventBus" in {
-      val eventBus = EventBus.getRef(actorSystem)
-      val testProbe = TestProbe()
-      testProbe.send(eventBus, EventBus.Subscribe(classOf[ListCreated]))
-      val listId = Random.nextLong()
-      val list = newActor(listId.toString)
-      list ! CreateList(listId, "New List")
-      testProbe.expectMsgType[ListCreated].listId shouldBe listId
-    }
     "not respond any message" in {
-      val listId = Random.nextLong()
+      val listId = randomId
       val list = newActor(listId.toString)
       list ! CreateList(listId, "New List")
       expectNoMessage()
@@ -70,7 +64,7 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
 
   "CreateTask" should {
     "create a task, update state and persist it" in {
-      val listId = Random.nextLong()
+      val listId = randomId
       val list = newActor(listId.toString)
       list ! CreateList(listId, "New List")
       list ! CreateTask(listId, 2, "New task")
@@ -93,7 +87,7 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
 
   "DeleteTask" should {
     "delete a task, update state and persist it" in {
-      val listId = Random.nextLong()
+      val listId = randomId
       val list = newActor(listId.toString)
       list ! CreateList(listId, "New List")
       list ! GetList(listId)
@@ -117,12 +111,24 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
     }
   }
 
+  "Notify EventBus" should {
+    "for ListCreated event" in {
+      val eventBus = EventBus.getRef(actorSystem)
+      val testProbe = TestProbe()
+      testProbe.send(eventBus, EventBus.Subscribe(classOf[ListCreated]))
+      val listId = randomId
+      val list = newActor(listId.toString)
+      list ! CreateList(listId, "New List")
+      testProbe.expectMsgType[ListCreated].listId shouldBe listId
+    }
+  }
+
   "ClusterSharding" should {
     "redirect messages to its actor" in {
-      val listRegion = ListActor.listRegion(actorSystem)
-      val listIdA = Random.nextLong()
-      val listIdB = Random.nextLong()
-      val listIdC = Random.nextLong()
+      val listRegion = ListActor.listRegion(actorSystem, elasticSearch)
+      val listIdA = randomId
+      val listIdB = randomId
+      val listIdC = randomId
 
       listRegion ! CreateList(listIdA, "ListA")
       listRegion ! CreateList(listIdB, "ListB")

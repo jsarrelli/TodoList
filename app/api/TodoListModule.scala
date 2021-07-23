@@ -13,11 +13,12 @@ object TodoListModule {
   class TodoListSystem(val system: ActorSystem)
 }
 
-class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModule  {
+class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModule {
 
   override def configure(): Unit = {
     bind(classOf[ClusterStart]).asEagerSingleton()
     bind[ListController].asEagerSingleton()
+    bind[ElasticSearchApi]
   }
 }
 

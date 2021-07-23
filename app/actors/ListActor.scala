@@ -3,15 +3,12 @@ package actors
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.cluster.sharding.ShardRegion.Passivate
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
-import akka.event.LoggingReceive
 import akka.persistence.{PersistentActor, SnapshotOffer}
-import api.ElasticSearch
+import api.ElasticSearchApi
 import controllers.Formatters
 import models.TodoList
 
-import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Success
 
 sealed trait ListCommand {
   val listId: Long
@@ -53,7 +50,7 @@ final case class TaskOrderUpdated(taskId: Long, order: Int) extends ListEvent {
   override def applyTo(state: TodoList): TodoList = state.updateTaskOrder(taskId, order)
 }
 
-class ListActor() extends Actor with PersistentActor with ActorLogging with Formatters {
+class ListActor(elasticSearch: ElasticSearchApi) extends Actor with PersistentActor with ActorLogging with Formatters {
 
   val listId: String = self.path.name
 
@@ -109,7 +106,7 @@ class ListActor() extends Actor with PersistentActor with ActorLogging with Form
 
   def handleEvent: ListEvent => Unit = {
     case event: ListCreated =>
-      ElasticSearch.indexListId(state.listId.toString, state.name)
+      elasticSearch.indexListId(state.listId.toString, state.name)
         .foreach(_ => eventBus ! event)
     case _ =>
   }
@@ -144,11 +141,9 @@ object ListActor {
     case _ => throw new IllegalArgumentException()
   }
 
-  def props(): Props = Props(new ListActor())
-
-  def listRegion(actorSystem: ActorSystem): ActorRef = ClusterSharding(actorSystem).start(
+  def listRegion(actorSystem: ActorSystem, elasticSearch: ElasticSearchApi): ActorRef = ClusterSharding(actorSystem).start(
     typeName = "List",
-    entityProps = ListActor.props(),
+    entityProps = Props(new ListActor(elasticSearch)),
     settings = ClusterShardingSettings(actorSystem),
     extractEntityId = ListActor.extractEntityId,
     extractShardId = ListActor.extractShardId
