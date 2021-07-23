@@ -6,6 +6,7 @@ import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import app.MongoTestEnv
 import app.TestApplication._
 import models.TodoList
+import org.mockito.Mockito.{times, verify}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
@@ -111,8 +112,8 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
     }
   }
 
-  "Notify EventBus" should {
-    "for ListCreated event" in {
+  "EventBus" should {
+    "be notified for a ListCreated event" in {
       val eventBus = EventBus.getRef(actorSystem)
       val testProbe = TestProbe()
       testProbe.send(eventBus, EventBus.Subscribe(classOf[ListCreated]))
@@ -120,6 +121,17 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
       val list = newActor(listId.toString)
       list ! CreateList(listId, "New List")
       testProbe.expectMsgType[ListCreated].listId shouldBe listId
+    }
+  }
+
+  "ElasticSearch" should {
+    "be notified for a ListCreated event" in {
+      val listId = randomId
+      val list = newActor(listId.toString)
+      list ! CreateList(listId, "New List")
+      list ! GetList(listId)
+      expectMsgType[ListState]
+      verify(elasticSearch, times(1)).indexListId(listId.toString, "New List")
     }
   }
 

@@ -15,7 +15,6 @@ class ElasticSearchApi @Inject()(configuration: Configuration) {
 
   import com.sksamuel.elastic4s.ElasticDsl._
 
-  //TODO look for these configs on application.conf
   protected val url = configuration.get[String]("elastic-search.uri")
   protected val client = ElasticClient(JavaClient(ElasticProperties(url)))
   protected val listIndex = configuration.get[String]("elastic-search.list-index")

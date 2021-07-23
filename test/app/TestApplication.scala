@@ -1,11 +1,9 @@
 package app
 
 import akka.actor.ActorSystem
-import api.{AppLoader, ElasticSearchApi}
 import com.typesafe.config.ConfigFactory
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.{Application, ApplicationLoader, Configuration}
+import org.mockito.Mockito
+import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
 
 import scala.concurrent.ExecutionContextExecutor
@@ -20,7 +18,7 @@ object TestApplication {
 
   val actorSystem: ActorSystem = customApplicationLoader.actorSystem
 
-  val elasticSearch = ElasticSearchTestEnv(config)
+  val elasticSearch = Mockito.spy(ElasticSearchTestEnv(config))
 
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
