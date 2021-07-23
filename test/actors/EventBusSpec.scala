@@ -9,7 +9,11 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-class EventBusSpec extends TestKit(actorSystem) with AnyWordSpecLike with Matchers with ImplicitSender {
+class EventBusSpec
+    extends TestKit(actorSystem)
+    with AnyWordSpecLike
+    with Matchers
+    with ImplicitSender {
 
   "Event Bus" should {
     "notify selected Events" in {
@@ -42,14 +46,14 @@ class EventBusSpec extends TestKit(actorSystem) with AnyWordSpecLike with Matche
       case class SomeEvent()
 
       case class Subscriber() extends Actor {
-        override def receive: Receive = {
-          case msg => probe.testActor ! msg
+        override def receive: Receive = { case msg =>
+          probe.testActor ! msg
         }
       }
       val subscriber = system.actorOf(Props(Subscriber()), "Subscriber")
 
       watch(subscriber)
-      eventBus tell(EventBus.Subscribe(classOf[SomeEvent]), subscriber)
+      eventBus tell (EventBus.Subscribe(classOf[SomeEvent]), subscriber)
       eventBus ! SomeEvent()
       probe.expectMsgType[SomeEvent]
 
@@ -62,6 +66,5 @@ class EventBusSpec extends TestKit(actorSystem) with AnyWordSpecLike with Matche
     }
 
   }
-
 
 }

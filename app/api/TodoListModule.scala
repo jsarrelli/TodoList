@@ -6,7 +6,6 @@ import controllers.ListController
 import net.codingwell.scalaguice.ScalaModule
 import play.api.libs.concurrent.AkkaGuiceSupport
 
-
 object TodoListModule {
   val todolistActorSystemName = "Todolist-Domain"
 
@@ -21,5 +20,3 @@ class TodoListModule extends AbstractModule with AkkaGuiceSupport with ScalaModu
     bind[ElasticSearchApi]
   }
 }
-
-

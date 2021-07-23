@@ -8,7 +8,7 @@ class TodoListSpec extends AnyFlatSpec with Matchers with Formatters {
   val list = TodoList(12, "test")
 
   "new task" should
-    "add task at the end" in {
+  "add task at the end" in {
     val updatedList = list
       .newTask(1, "task1")
       .newTask(2, "task2")
@@ -45,14 +45,15 @@ class TodoListSpec extends AnyFlatSpec with Matchers with Formatters {
     updatedList.tasks.map(_.order) shouldBe List(0, 1)
   }
 
-  "update task order" should "put some inner category as first" in{
+  "update task order" should "put some inner category as first" in {
     val updatedList = list
       .newTask(1, "task1")
       .newTask(2, "task2")
       .newTask(3, "task3")
       .newTask(4, "task4")
-      .updateTaskOrder(2,0)
-    updatedList.tasks.map(task => (task.taskId,task.order)) shouldBe List((2,0),(1,1),(3,2),(4,3))
+      .updateTaskOrder(2, 0)
+    updatedList.tasks
+      .map(task => (task.taskId, task.order)) shouldBe List((2, 0), (1, 1), (3, 2), (4, 3))
   }
 
   it should "take some inner category to the back" in {
@@ -61,8 +62,9 @@ class TodoListSpec extends AnyFlatSpec with Matchers with Formatters {
       .newTask(2, "task2")
       .newTask(3, "task3")
       .newTask(4, "task4")
-      .updateTaskOrder(2,3)
-    updatedList.tasks.map(task => (task.taskId,task.order)) shouldBe List((1,0),(3,1),(4,2),(2,3))
+      .updateTaskOrder(2, 3)
+    updatedList.tasks
+      .map(task => (task.taskId, task.order)) shouldBe List((1, 0), (3, 1), (4, 2), (2, 3))
   }
 
   it should "take last category and put it at the middle" in {
@@ -71,8 +73,9 @@ class TodoListSpec extends AnyFlatSpec with Matchers with Formatters {
       .newTask(2, "task2")
       .newTask(3, "task3")
       .newTask(4, "task4")
-      .updateTaskOrder(4,1)
-    updatedList.tasks.map(task => (task.taskId,task.order)) shouldBe List((1,0),(4,1),(2,2),(3,3))
+      .updateTaskOrder(4, 1)
+    updatedList.tasks
+      .map(task => (task.taskId, task.order)) shouldBe List((1, 0), (4, 1), (2, 2), (3, 3))
   }
 
 }

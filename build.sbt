@@ -59,7 +59,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-serialization-jackson" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
 )
 
 libraryDependencies ++= Seq(
@@ -82,4 +82,3 @@ libraryDependencies ++= Seq(
   ehcache,
   guice
 )
-

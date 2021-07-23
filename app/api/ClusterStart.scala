@@ -1,6 +1,5 @@
 package api
 
-
 import actors.EventBus
 import akka.actor.ActorSystem
 import akka.management.cluster.bootstrap.ClusterBootstrap
@@ -12,7 +11,8 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContextExecutor
 
 @Singleton
-class ClusterStart @Inject()(system: ActorSystem, cc: ControllerComponents) extends AbstractController(cc) {
+class ClusterStart @Inject() (system: ActorSystem, cc: ControllerComponents)
+    extends AbstractController(cc) {
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: Materializer = Materializer(system)
 
@@ -21,4 +21,3 @@ class ClusterStart @Inject()(system: ActorSystem, cc: ControllerComponents) exte
 
   EventBus.init(system)
 }
-

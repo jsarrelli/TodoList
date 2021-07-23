@@ -1,10 +1,14 @@
 package actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Terminated}
-import akka.cluster.singleton.{ClusterSingletonManager, ClusterSingletonManagerSettings, ClusterSingletonProxy, ClusterSingletonProxySettings}
+import akka.cluster.singleton.{
+  ClusterSingletonManager,
+  ClusterSingletonManagerSettings,
+  ClusterSingletonProxy,
+  ClusterSingletonProxySettings
+}
 
 import scala.collection.mutable
-
 
 class EventBus extends Actor with ActorLogging {
 
@@ -31,10 +35,11 @@ class EventBus extends Actor with ActorLogging {
   }
 
   private def removeSubscriber(terminatedSubscriber: ActorRef): Unit = {
-    subscribers.foreach { case (topic, topicSubscribers) if topicSubscribers.contains(terminatedSubscriber) =>
-      val newTopicSubscribers = topicSubscribers.dropWhile(_ == terminatedSubscriber)
-      if (newTopicSubscribers.isEmpty) subscribers.remove(topic)
-      else subscribers.put(topic, newTopicSubscribers)
+    subscribers.foreach {
+      case (topic, topicSubscribers) if topicSubscribers.contains(terminatedSubscriber) =>
+        val newTopicSubscribers = topicSubscribers.dropWhile(_ == terminatedSubscriber)
+        if (newTopicSubscribers.isEmpty) subscribers.remove(topic)
+        else subscribers.put(topic, newTopicSubscribers)
     }
   }
 
@@ -52,13 +57,16 @@ object EventBus {
   def getRef(actorSystem: ActorSystem): ActorRef = actorSystem.actorOf(
     ClusterSingletonProxy.props(
       singletonManagerPath = "/user/eventBus",
-      settings = ClusterSingletonProxySettings(actorSystem))
+      settings = ClusterSingletonProxySettings(actorSystem)
+    )
   )
 
   def init(actorSystem: ActorSystem): ActorRef = actorSystem.actorOf(
     ClusterSingletonManager.props(
       singletonProps = Props(new EventBus()),
       terminationMessage = "StopEntity",
-      settings = ClusterSingletonManagerSettings(actorSystem)),
-    name = "eventBus")
+      settings = ClusterSingletonManagerSettings(actorSystem)
+    ),
+    name = "eventBus"
+  )
 }

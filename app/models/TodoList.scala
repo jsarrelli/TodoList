@@ -1,6 +1,5 @@
 package models
 
-
 object TodoList {
 
   def apply(listId: Long, name: String): TodoList = {
@@ -11,7 +10,6 @@ object TodoList {
 }
 
 case class TodoList(listId: Long, name: String, tasks: List[Task]) {
-
 
   def newTask(taskId: Long, description: String): TodoList = {
     val newTask = Task(taskId = taskId, completed = false, description = description, order = 999)
@@ -34,25 +32,21 @@ case class TodoList(listId: Long, name: String, tasks: List[Task]) {
   def updateTaskOrder(taskId: Long, order: Int): TodoList = {
     val (head, tail) = tasks.filterNot(_.taskId == taskId).splitAt(order)
     val taskToReorder = tasks.find(_.taskId == taskId).toList
-    val updatedTasks = (head ++ taskToReorder ++ tail)
+    val updatedTasks = head ++ taskToReorder ++ tail
     copy(tasks = updatedTasks).reorderTasks
   }
 
-
   private def reorderTasks: TodoList = {
-    val updatedTasks = tasks.zipWithIndex.foldLeft(List.empty[Task]) {
-      case (list, (task, index)) =>
-        list :+ task.copy(order = index)
+    val updatedTasks = tasks.zipWithIndex.foldLeft(List.empty[Task]) { case (list, (task, index)) =>
+      list :+ task.copy(order = index)
     }
     copy(tasks = updatedTasks)
   }
 
   def completeTask(taskId: Long): TodoList = {
-    copy(tasks =
-      tasks.map {
-        case x if x.taskId == taskId => x.complete()
-        case x => x
-      }
-    )
+    copy(tasks = tasks.map {
+      case x if x.taskId == taskId => x.complete()
+      case x                       => x
+    })
   }
 }

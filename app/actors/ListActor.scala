@@ -18,7 +18,13 @@ final case class CreateList(listId: Long, name: String) extends ListCommand
 
 final case class CreateTask(listId: Long, taskId: Long, description: String) extends ListCommand
 
-final case class UpdateTask(listId: Long, taskId: Long, description: String, completed: Boolean, order: Int) extends ListCommand
+final case class UpdateTask(
+  listId: Long,
+  taskId: Long,
+  description: String,
+  completed: Boolean,
+  order: Int
+) extends ListCommand
 
 final case class UpdateTaskOrder(listId: Long, taskId: Long, order: Int) extends ListCommand
 
@@ -42,15 +48,22 @@ final case class TaskDeleted(taskId: Long) extends ListEvent {
   override def applyTo(state: TodoList): TodoList = state.removeTask(taskId)
 }
 
-final case class TaskUpdated(taskId: Long, description: String, completed: Boolean, order: Int) extends ListEvent {
-  override def applyTo(state: TodoList): TodoList = state.updateTask(taskId, description, completed, order)
+final case class TaskUpdated(taskId: Long, description: String, completed: Boolean, order: Int)
+    extends ListEvent {
+
+  override def applyTo(state: TodoList): TodoList =
+    state.updateTask(taskId, description, completed, order)
 }
 
 final case class TaskOrderUpdated(taskId: Long, order: Int) extends ListEvent {
   override def applyTo(state: TodoList): TodoList = state.updateTaskOrder(taskId, order)
 }
 
-class ListActor(elasticSearch: ElasticSearchApi) extends Actor with PersistentActor with ActorLogging with Formatters {
+class ListActor(elasticSearch: ElasticSearchApi)
+    extends Actor
+    with PersistentActor
+    with ActorLogging
+    with Formatters {
 
   val listId: String = self.path.name
 
@@ -106,7 +119,8 @@ class ListActor(elasticSearch: ElasticSearchApi) extends Actor with PersistentAc
 
   def handleEvent: ListEvent => Unit = {
     case event: ListCreated =>
-      elasticSearch.indexListId(state.listId.toString, state.name)
+      elasticSearch
+        .indexListId(state.listId.toString, state.name)
         .foreach(_ => eventBus ! event)
     case _ =>
   }
@@ -128,8 +142,9 @@ class ListActor(elasticSearch: ElasticSearchApi) extends Actor with PersistentAc
 }
 
 object ListActor {
-  val extractEntityId: ShardRegion.ExtractEntityId = {
-    case msg: ListCommand => (msg.listId.toString, msg)
+
+  val extractEntityId: ShardRegion.ExtractEntityId = { case msg: ListCommand =>
+    (msg.listId.toString, msg)
   }
 
   val numberOfShards = 100
@@ -141,11 +156,12 @@ object ListActor {
     case _ => throw new IllegalArgumentException()
   }
 
-  def listRegion(actorSystem: ActorSystem, elasticSearch: ElasticSearchApi): ActorRef = ClusterSharding(actorSystem).start(
-    typeName = "List",
-    entityProps = Props(new ListActor(elasticSearch)),
-    settings = ClusterShardingSettings(actorSystem),
-    extractEntityId = ListActor.extractEntityId,
-    extractShardId = ListActor.extractShardId
-  )
+  def listRegion(actorSystem: ActorSystem, elasticSearch: ElasticSearchApi): ActorRef =
+    ClusterSharding(actorSystem).start(
+      typeName = "List",
+      entityProps = Props(new ListActor(elasticSearch)),
+      settings = ClusterShardingSettings(actorSystem),
+      extractEntityId = ListActor.extractEntityId,
+      extractShardId = ListActor.extractShardId
+    )
 }

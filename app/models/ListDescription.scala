@@ -1,3 +1,3 @@
 package models
 
-case class ListDescription(listId:String,name:String)
+case class ListDescription(listId: String, name: String)

@@ -5,7 +5,6 @@ import models.{ListDescription, Task, TodoList}
 import play.api.libs.json.JsonConfiguration.Aux
 import play.api.libs.json._
 
-
 trait Formatters {
 
   implicit val jsonConfiguration: Aux[Json.MacroOptions] = JsonConfiguration(
@@ -14,9 +13,9 @@ trait Formatters {
   )
 
   object CommandsNaming extends JsonNaming {
+
     override def apply(property: String): String = {
-      (for (char <- property.split("\\.").last) yield
-        if (char.isUpper) "_" + char else "" + char)
+      (for (char <- property.split("\\.").last) yield if (char.isUpper) "_" + char else "" + char)
         .reduce(_ ++ _)
         .drop(1)
         .toUpperCase
@@ -32,7 +31,6 @@ trait Formatters {
   implicit val currentListsResponse = Json.format[CurrentLists]
   implicit val webSocketResponse = Json.format[Response]
 
-
   implicit val createListFormat = Json.format[CreateList]
   implicit val createTaskFormat = Json.format[CreateTask]
   implicit val removeTaskFormat = Json.format[DeleteTask]
@@ -42,7 +40,6 @@ trait Formatters {
   implicit val listCommandFormat = Json.format[ListCommand]
 
   //implicit val getAllListsFormat = ((JsPath \ "type").read[String])(GetAllLists(_))
-
 
   /*  def responseToJson: Response => JsValue = {
       case TaskCreated(task) => Json.obj("response_type" -> "task_created", "task" -> task)

@@ -1,13 +1,11 @@
 package app
 
-import reactivemongo.api.{AsyncDriver, MongoConnection}
-
-import scala.concurrent.{Await, Future}
-
 import reactivemongo.api.bson.BSONDocument
 import reactivemongo.api.bson.collection.BSONCollection
+import reactivemongo.api.{AsyncDriver, MongoConnection}
 
 import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 trait MongoTestEnv {

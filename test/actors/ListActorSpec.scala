@@ -14,7 +14,13 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import scala.language.postfixOps
 import scala.util.Random
 
-class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWordSpecLike with Matchers with BeforeAndAfterAll with MongoTestEnv {
+class ListActorSpec
+    extends TestKit(actorSystem)
+    with ImplicitSender
+    with AnyWordSpecLike
+    with Matchers
+    with BeforeAndAfterAll
+    with MongoTestEnv {
 
   override def afterAll(): Unit = {
     cleanCollections()
@@ -22,7 +28,6 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
   }
 
   case class ListActorTest(override val listId: String) extends ListActor(elasticSearch)
-
 
   def newActor(listId: String): ActorRef = system.actorOf(Props(ListActorTest(listId)))
 
@@ -156,8 +161,6 @@ class ListActorSpec extends TestKit(actorSystem) with ImplicitSender with AnyWor
       expectMsgType[ListState].state.name shouldBe "ListB"
     }
 
-
   }
-
 
 }

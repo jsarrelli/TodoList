@@ -1,8 +1,8 @@
 package api
 
+import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.JavaClient
 import com.sksamuel.elastic4s.requests.indexes.IndexResponse
-import com.sksamuel.elastic4s._
 import models.ListDescription
 import play.api.Configuration
 
@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
 
-class ElasticSearchApi @Inject()(configuration: Configuration) {
+class ElasticSearchApi @Inject() (configuration: Configuration) {
 
   import com.sksamuel.elastic4s.ElasticDsl._
 
@@ -22,22 +22,24 @@ class ElasticSearchApi @Inject()(configuration: Configuration) {
   generateListIndex()
 
   implicit object ListIdReader extends HitReader[ListDescription] {
+
     override def read(hit: Hit): Try[ListDescription] = Try {
       val source = hit.sourceAsMap
       ListDescription(source("listId").toString, source("name").toString)
     }
   }
 
-
-  def getLists(): Future[List[ListDescription]] = client.execute(
-    search(listIndex)
-  ).map(_.result.to[ListDescription].toList)
+  def getLists(): Future[List[ListDescription]] = client
+    .execute(
+      search(listIndex)
+    )
+    .map(_.result.to[ListDescription].toList)
 
   def indexListId(listId: String, name: String): Future[Response[IndexResponse]] =
     client.execute(
       indexInto(listIndex).fields(
         "listId" -> listId,
-        "name" -> name
+        "name"   -> name
       )
     )
 
@@ -48,6 +50,5 @@ class ElasticSearchApi @Inject()(configuration: Configuration) {
   private def generateListIndex(): Unit = client.execute {
     createIndex(listIndex)
   }.await
-
 
 }
