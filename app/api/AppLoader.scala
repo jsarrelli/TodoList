@@ -1,21 +1,17 @@
 package api
 
 import com.typesafe.config.ConfigValueFactory
-import play.api.ApplicationLoader
-import play.api.Configuration
-import play.api.inject._
 import play.api.inject.guice._
+import play.api.{Application, ApplicationLoader, Configuration, Mode}
 
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
-class CustomApplicationLoader extends GuiceApplicationLoader() {
+class AppLoader extends GuiceApplicationLoader() {
   override def builder(context: ApplicationLoader.Context): GuiceApplicationBuilder = {
-    val config = context.initialConfiguration.get[String]("env") match {
-      case "CLUSTER" =>
-        cleanSeedNodes.withFallback(context.initialConfiguration)
-      case _ =>
-        context.initialConfiguration
-
+    println(s"El ambiente es ${context.environment.mode}")
+    val config = context.environment.mode match {
+      case _ => context.initialConfiguration
+      case Mode.Prod => cleanSeedNodes.withFallback(context.initialConfiguration)
     }
     initialBuilder
       .in(context.environment)
@@ -23,7 +19,9 @@ class CustomApplicationLoader extends GuiceApplicationLoader() {
       .overrides(overrides(context): _*)
   }
 
-  def cleanSeedNodes: Configuration =
+
+  private def cleanSeedNodes: Configuration =
     Configuration("akka.cluster.seed-nodes" -> ConfigValueFactory.fromIterable(Nil.asJava))
+
 
 }

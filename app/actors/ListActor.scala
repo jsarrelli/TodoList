@@ -1,6 +1,7 @@
 package actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.cluster.sharding.ShardRegion.Passivate
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings, ShardRegion}
 import akka.event.LoggingReceive
 import akka.persistence.{PersistentActor, SnapshotOffer}
@@ -60,16 +61,17 @@ class ListActor() extends Actor with PersistentActor with ActorLogging with Form
 
   var state: TodoList = TodoList.emptyList()
 
-  val eventBus = EventBus.getActorRef(context.system)
+  val eventBus: ActorRef = EventBus.getRef(context.system)
 
   override def receiveCommand: Receive = {
 
     case CreateList(listId, name) =>
-      if (state == TodoList.emptyList()) {
-        val event = ListCreated(listId, name)
-        persistAndUpdateState(event)
-      } else {
-        log.warning(s"Actor $listId already created")
+      state match {
+        case _ if state != TodoList.emptyList() =>
+          log.warning(s"Actor $listId already created")
+        case _ =>
+          val event = ListCreated(listId, name)
+          persistAndUpdateState(event)
       }
 
     case CreateTask(_, taskId, description) =>
@@ -90,6 +92,9 @@ class ListActor() extends Actor with PersistentActor with ActorLogging with Form
 
     case _: GetList =>
       sender() ! ListState(state)
+
+    case Passivate =>
+      context stop self
   }
 
   def updateState(newState: TodoList): Unit = this.state = newState
@@ -97,11 +102,14 @@ class ListActor() extends Actor with PersistentActor with ActorLogging with Form
   def persistAndUpdateState(event: ListEvent): Unit = persist(event) { _ =>
     val newState = event.applyTo(state)
     updateState(newState)
+    handleEvent(event)
+  }
 
-    if (event.isInstanceOf[ListCreated]) {
+  def handleEvent: ListEvent => Unit = {
+    case event: ListCreated =>
       eventBus ! event
       ElasticSearch.indexListId(state.listId.toString, state.name)
-    }
+    case _ =>
   }
 
   def saveSnapshot(): Unit = {
@@ -135,4 +143,12 @@ object ListActor {
   }
 
   def props(): Props = Props(new ListActor())
+
+  def listRegion(actorSystem: ActorSystem): ActorRef = ClusterSharding(actorSystem).start(
+    typeName = "List",
+    entityProps = ListActor.props(),
+    settings = ClusterShardingSettings(actorSystem),
+    extractEntityId = ListActor.extractEntityId,
+    extractShardId = ListActor.extractShardId
+  )
 }

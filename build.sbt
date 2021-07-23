@@ -47,7 +47,11 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test)
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
+    "com.typesafe.akka" %% "akka-persistence-testkit" % akkaVersion % Test,
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
+  )
+
 }
 
 //Typed
@@ -78,3 +82,6 @@ libraryDependencies ++= Seq(
   ehcache,
   guice
 )
+
+Test / javaOptions += "-DENV=TEST"
+

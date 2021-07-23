@@ -1,4 +1,6 @@
-import actors.{CreateList, CreateTask, ListCommand}
+package api
+
+import actors.{CreateTask, ListCommand}
 import controllers.Formatters
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

@@ -6,29 +6,50 @@ import akka.cluster.singleton.{ClusterSingletonManager, ClusterSingletonManagerS
 import scala.collection.mutable
 
 
-case class Subscribe(subscriber: ActorRef)
-
-
 class EventBus extends Actor with ActorLogging {
 
+  import EventBus._
 
-  val subscribers: mutable.Set[ActorRef] = mutable.Set.empty
+  val subscribers: mutable.Map[Class[_ <: Any], Set[ActorRef]] = mutable.Map.empty
 
   override def receive: Receive = {
-    case msg: ListCreated =>
-      subscribers.foreach(_ ! msg)
+    case Subscribe(topic) =>
+      val subscriber = sender()
+      registerNewSubscriber(topic, subscriber)
 
-    case Subscribe(subscriber) =>
-      context.watch(subscriber)
-      subscribers.add(subscriber)
+    case Terminated(terminatedSubscriber) =>
+      removeSubscriber(terminatedSubscriber)
 
-    case Terminated(subscriber) =>
-      subscribers.dropWhile(_ == subscriber)
+    case msg =>
+      notifySubscribers(msg)
+  }
+
+  private def registerNewSubscriber(topic: Class[_], subscriber: ActorRef): Unit = {
+    context.watch(subscriber)
+    val updatedSubscribers = subscribers.getOrElse(topic, Set.empty) + subscriber
+    subscribers.put(topic, updatedSubscribers)
+  }
+
+  private def removeSubscriber(terminatedSubscriber: ActorRef): Unit = {
+    subscribers.foreach { case (topic, topicSubscribers) if topicSubscribers.contains(terminatedSubscriber) =>
+      val newTopicSubscribers = topicSubscribers.dropWhile(_ == terminatedSubscriber)
+      if (newTopicSubscribers.isEmpty) subscribers.remove(topic)
+      else subscribers.put(topic, newTopicSubscribers)
+    }
+  }
+
+  private def notifySubscribers(msg: Any): Unit = {
+    val topic = msg.getClass
+    subscribers.getOrElse(topic, Set.empty).foreach { subscriber =>
+      subscriber ! msg
+    }
   }
 }
 
 object EventBus {
-  def getActorRef(actorSystem: ActorSystem): ActorRef = actorSystem.actorOf(
+  case class Subscribe[_ <: Any](topic: Class[_])
+
+  def getRef(actorSystem: ActorSystem): ActorRef = actorSystem.actorOf(
     ClusterSingletonProxy.props(
       singletonManagerPath = "/user/eventBus",
       settings = ClusterSingletonProxySettings(actorSystem))

@@ -15,13 +15,7 @@ class ListController @Inject()(cc: ControllerComponents, actorSystem: ActorSyste
 
   implicit val messageFlowTransformer: MessageFlowTransformer[ListCommand, Response] = MessageFlowTransformer.jsonMessageFlowTransformer[ListCommand, Response]
 
-  val listRegion = ClusterSharding(actorSystem).start(
-    typeName = "List",
-    entityProps = ListActor.props(),
-    settings = ClusterShardingSettings(actorSystem),
-    extractEntityId = ListActor.extractEntityId,
-    extractShardId = ListActor.extractShardId
-  )
+  val listRegion = ListActor.listRegion(actorSystem)
 
   def socket(): WebSocket = WebSocket.accept[ListCommand, Response] { _ =>
     ActorFlow.actorRef { client =>

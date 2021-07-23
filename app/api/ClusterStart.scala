@@ -2,8 +2,7 @@ package api
 
 
 import actors.EventBus
-import akka.actor.{ActorSystem, Props}
-import akka.cluster.singleton.{ClusterSingletonManager, ClusterSingletonManagerSettings}
+import akka.actor.ActorSystem
 import akka.management.cluster.bootstrap.ClusterBootstrap
 import akka.management.scaladsl.AkkaManagement
 import akka.stream.Materializer
@@ -21,6 +20,5 @@ class ClusterStart @Inject()(system: ActorSystem, cc: ControllerComponents) exte
   ClusterBootstrap.get(system).start()
 
   EventBus.init(system)
-
 }
 
