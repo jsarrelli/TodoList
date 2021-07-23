@@ -82,3 +82,6 @@ libraryDependencies ++= Seq(
   ehcache,
   guice
 )
+
+Test / fork := false
+Test / parallelExecution := false
