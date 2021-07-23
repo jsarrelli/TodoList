@@ -10,6 +10,7 @@ import models.{ListDescription, TodoList}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
@@ -29,10 +30,11 @@ object WebSocketActor {
 class WebSocketActor(client: ActorRef, listRegion: ActorRef) extends Actor with ActorLogging {
   implicit val timeout: Timeout = Timeout(10 seconds)
   val eventBus: ActorRef = EventBus.getRef(context.system)
+  val currentLists = mutable.Set.empty[ListDescription]
 
   override def preStart(): Unit = {
     eventBus ! EventBus.Subscribe(classOf[ListCreated])
-    notifyCurrentLists()
+    loadCurrentLists().foreach(_ => notifyClientCurrentLists())
   }
 
   def receive: Receive = {
@@ -40,12 +42,13 @@ class WebSocketActor(client: ActorRef, listRegion: ActorRef) extends Actor with 
       listRegion tell(message, client)
 
     case listCreated: ListCreated =>
-      val currentLists = ElasticSearch.getLists().map(_ :+ ListDescription(listCreated.listId.toString, listCreated.name))
-      //workaround to avoid elastic search refresh time
-      currentLists.foreach(lists => client ! CurrentLists(lists))
+      currentLists.add(ListDescription(listCreated.listId.toString, listCreated.name))
+      notifyClientCurrentLists()
   }
-  //TODO do we need some validation for non-existing lists?
 
-  private def notifyCurrentLists(): Unit = ElasticSearch.getLists().foreach(lists => client ! CurrentLists(lists))
+  private def loadCurrentLists(): Future[Unit] =
+    ElasticSearch.getLists().map(lists => lists.foreach(currentLists.add))
 
+  private def notifyClientCurrentLists(): Unit =
+    client ! CurrentLists(currentLists.toList)
 }
