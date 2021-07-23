@@ -1,25 +1,30 @@
 package app
 
 import akka.actor.ActorSystem
+import api.ElasticSearchApi
 import com.typesafe.config.ConfigFactory
 import org.mockito.Mockito
 import play.api.Configuration
+import play.api.inject._
 import play.api.inject.guice.GuiceApplicationBuilder
 
 import scala.concurrent.ExecutionContextExecutor
 
 object TestApplication {
 
-  private val config = Configuration.empty
+  val config: Configuration = Configuration.empty
     .withFallback(mongoTestingDatabase)
     .withFallback(elasticSearchTest)
     .withFallback(Configuration(ConfigFactory.load()))
 
-  val customApplicationLoader = new GuiceApplicationBuilder().loadConfig(config).build()
+  val elasticSearch = Mockito.spy(ElasticSearchTestEnv(config))
+
+  val customApplicationLoader = new GuiceApplicationBuilder()
+    .loadConfig(config)
+    .overrides(bind[ElasticSearchApi].toInstance(elasticSearch))
+    .build()
 
   val actorSystem: ActorSystem = customApplicationLoader.actorSystem
-
-  val elasticSearch = Mockito.spy(ElasticSearchTestEnv(config))
 
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
