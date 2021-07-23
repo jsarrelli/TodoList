@@ -40,8 +40,9 @@ class WebSocketActor(client: ActorRef, listRegion: ActorRef) extends Actor with 
       listRegion tell(message, client)
 
     case listCreated: ListCreated =>
-      val listId = listCreated.listId
-      listRegion tell(GetList(listId), client)
+      val currentLists = ElasticSearch.getLists().map(_ :+ ListDescription(listCreated.listId.toString, listCreated.name))
+      //workaround to avoid elastic search refresh time
+      currentLists.foreach(lists => client ! CurrentLists(lists))
   }
   //TODO do we need some validation for non-existing lists?
 

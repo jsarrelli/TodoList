@@ -10,6 +10,8 @@ import controllers.Formatters
 import models.TodoList
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
 
 sealed trait ListCommand {
   val listId: Long
@@ -107,8 +109,8 @@ class ListActor() extends Actor with PersistentActor with ActorLogging with Form
 
   def handleEvent: ListEvent => Unit = {
     case event: ListCreated =>
-      eventBus ! event
       ElasticSearch.indexListId(state.listId.toString, state.name)
+        .foreach(_ => eventBus ! event)
     case _ =>
   }
 

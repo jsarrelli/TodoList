@@ -60,8 +60,6 @@ spec:
               value: "http://172.16.238.10:9200"
             - name: MONGO_URL
               value: "mongodb://172.16.238.20:27018/todolist"
-            - name: ENV
-              value: "CLUSTER"
 
 ---
 kind: Role

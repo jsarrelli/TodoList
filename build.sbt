@@ -83,5 +83,3 @@ libraryDependencies ++= Seq(
   guice
 )
 
-Test / javaOptions += "-DENV=TEST"
-

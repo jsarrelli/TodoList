@@ -1,7 +1,8 @@
 package api
 
 import com.sksamuel.elastic4s.http.JavaClient
-import com.sksamuel.elastic4s.{ElasticClient, ElasticProperties, Hit, HitReader}
+import com.sksamuel.elastic4s.requests.indexes.IndexResponse
+import com.sksamuel.elastic4s.{ElasticClient, ElasticProperties, Hit, HitReader, Response}
 import models.ListDescription
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,12 +32,13 @@ object ElasticSearch {
     search(listIndex)
   ).map(_.result.to[ListDescription].toList)
 
-  def indexListId(listId: String, name: String): Unit = client.execute(
-    indexInto(listIndex).fields(
-      "listId" -> listId,
-      "name" -> name
+  def indexListId(listId: String, name: String): Future[Response[IndexResponse]] =
+    client.execute(
+      indexInto(listIndex).fields(
+        "listId" -> listId,
+        "name" -> name
+      )
     )
-  )
 
   def deleteList(listId: String): Unit = client.execute {
     deleteByQuery(listIndex, termQuery("listId", listId))

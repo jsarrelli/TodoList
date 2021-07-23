@@ -8,10 +8,9 @@ import scala.jdk.CollectionConverters.IterableHasAsJava
 
 class AppLoader extends GuiceApplicationLoader() {
   override def builder(context: ApplicationLoader.Context): GuiceApplicationBuilder = {
-    println(s"El ambiente es ${context.environment.mode}")
     val config = context.environment.mode match {
-      case _ => context.initialConfiguration
       case Mode.Prod => cleanSeedNodes.withFallback(context.initialConfiguration)
+      case _ => context.initialConfiguration
     }
     initialBuilder
       .in(context.environment)
